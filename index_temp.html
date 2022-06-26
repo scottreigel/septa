@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Septa Bus Locations</title>
+<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+<link href="https://api.tiles.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.css" rel="stylesheet">
+<script src="https://api.tiles.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js"></script>
+<style>
+body { margin: 0; padding: 0; }
+#map { position: absolute; top: 0; bottom: 0; width: 100%; }
+
+.bus-info {
+  position: absolute;
+  font-family: sans-serif;
+  margin-top: 5px;
+  margin-left: 5px;
+  padding: 5px;
+  width: 20%;
+  border: 2px solid black;
+  font-size: 14px;
+  color: #222;
+  background-color: #fff;
+  border-radius: 3px;
+}
+.mapboxgl-popup {
+padding-bottom: 50px;
+}
+ 
+.mapboxgl-popup-close-button {
+display: none;
+}
+.mapboxgl-popup-content {
+font: 400 15px/22px 'Source Sans Pro', 'Helvetica Neue', sans-serif;
+padding: 0;
+width: 180px;
+}
+.mapboxgl-popup-content h3 {
+background: #ff0000;
+color: #fff;
+margin: 0;
+padding: 10px;
+border-radius: 3px 3px 0 0;
+font-weight: 700;
+margin-top: -15px;
+}
+ 
+.mapboxgl-popup-content h4 {
+margin: 0;
+padding: 10px;
+font-weight: 400;
+}
+ 
+.mapboxgl-popup-content div {
+padding: 10px;
+}
+ 
+.mapboxgl-popup-anchor-top > .mapboxgl-popup-content {
+margin-top: 15px;
+}
+ 
+.mapboxgl-popup-anchor-top > .mapboxgl-popup-tip {
+border-bottom-color: #91c949;
+}
+
+</style>
+</head>
+<body>
+	<div id="map"></div>
+<!--	<div class='bus-info'>
+		<div><strong>Route:</strong> <span id='routes'></span></div>
+		<div><strong>Destination:</strong> <span id='dest'></span></div>
+		<div><strong>Direction:</strong> <span id='direction'></span></div>
+		<div><strong>Next Stop:</strong> <span id='nextstop'></span></div> -->
+<script>
+	mapboxgl.accessToken = 'your access token';
+
+const map = new mapboxgl.Map({
+container: 'map', // container ID
+style: 'mapbox://styles/mapbox/dark-v10', // style URL
+zoom: 10, // starting zoom
+center: [-75.043, 39.991] // starting center
+});
+ 
+map.on('load', () => {
+map.addSource('septa', {
+type: 'geojson',
+// Use a URL for the value for the `data` property.
+data: 'https://gsrspatial.com/septa.json'
+});
+
+ 
+map.addLayer({
+'id': 'septa-layer',
+'type': 'circle',
+'source': 'septa',
+'paint': {
+'circle-radius': 2,
+'circle-stroke-width': 1,
+'circle-color': 'red',
+'circle-stroke-color': 'white'
+
+}
+});
+});
+
+
+map.on('click', (event) => {
+const features = map.queryRenderedFeatures(event.point, {
+layers: ['septa-layer']
+});
+if (!features.length) {
+return;
+}
+const feature = features[0];
+ 
+const popup = new mapboxgl.Popup({ offset: [0, -15] })
+.setLngLat(feature.geometry.coordinates)
+.setHTML(
+`<h3>Route: ${feature.properties.routes}</h3><p>Destination: ${feature.properties.dest}</p><p>Direction: ${feature.properties.direction}</p><p>Next Stop: ${feature.properties.nextstop}</p>`
+)
+.addTo(map);
+});
+
+const routesDisplay = document.getElementById('routes');
+const destDisplay = document.getElementById('dest');
+const directionDisplay = document.getElementById('direction');
+const nextstopDisplay = document.getElementById('nextstop');
+
+
+</script>
+ 
+</body>
+</html>
